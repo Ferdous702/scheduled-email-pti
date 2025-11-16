@@ -147,6 +147,8 @@ function schedule_events_on_purchase($order_id, $return = false)
             continue;
         }
 
+        require_once plugin_dir_path(__FILE__) . 'marketing.php';
+
         $special_template_status = get_post_meta($meta_id, 'special_template_status', true);
 
         $reminder_properties = [
