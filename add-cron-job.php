@@ -2,7 +2,7 @@
 /**
  * Plugin Name: PTI Scheduled Email
  * Description: Schedules and sends a reminder email after a WooCommerce purchase via a custom database table and a single cron job (UTC-safe).
- * Version: 1.1
+ * Version: 1.2
  * Author: PTI
  */
 
