@@ -289,8 +289,26 @@ function pti_process_scheduled_emails()
     foreach ($emails as $email) {
         $payload = json_decode($email->content, true);
 
-        // Valid Omnisend payload?
-        if (json_last_error() === JSON_ERROR_NONE && isset($payload['eventName'])) {
+        if (strpos($email->content, "omnisend, ") !== false) {
+            $course_title = str_replace("omnisend, ", "", $email->content);
+            $data = [
+                "contact" => ["email" => $email->mailto],
+                "origin" => "api",
+                "eventName" => "marketing",
+                "properties" => ["Course_Title" => $course_title]
+            ];
+            $response = wp_remote_post("https://api.omnisend.com/v5/events", [
+                'headers' => [
+                    'X-API-KEY' => PTI_OMNISEND_API_KEY,
+                    'Content-Type' => 'application/json',
+                ],
+                'body' => json_encode($data),
+            ]);
+            if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) < 300) {
+            $wpdb->update($table_name, ['sent_time' => current_time('mysql', true)], ['id' => $email->id], ['%s'], ['%d']);
+            error_log("PTI Scheduled Email: ✅ Sent Omnisend event for Order ID " . $email->order_id . " (row {$email->id})");
+            }
+        }elseif (json_last_error() === JSON_ERROR_NONE && isset($payload['eventName'])) {
             $data = [
                 "contact"    => ["email" => $email->mailto],
                 "origin"     => "api",
