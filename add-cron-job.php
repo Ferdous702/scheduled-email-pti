@@ -194,7 +194,7 @@ function schedule_events_on_purchase($order_id, $return = false)
         $insert_result = $wpdb->insert($table_name, [
             'mailto'         => $customer_email,
             'subject' => 'Your thoughts matter! Share your feedback now',
-            'content'        => json_encode(['eventName' => 'classroom_training']),
+            'content'        => json_encode(['eventName' => 'classroom_training', 'properties' => []]),
             'scheduled_time' => $feedback_time,
             'order_id'       => $order_id,
             'product_id' => $product_id,
@@ -234,7 +234,7 @@ function schedule_events_on_purchase($order_id, $return = false)
             $insert_result = $wpdb->insert($table_name, [
                 'mailto'         => $customer_email,
                 'subject' => 'Phlebotomy Reminder Email for completing theory Part',
-                'content'        => json_encode(['eventName' => 'phle_reminder_mail']),
+                'content'        => json_encode(['eventName' => 'phle_reminder_mail', 'properties' => []]),
                 'scheduled_time' => $phle_time,
                 'order_id'       => $order_id,
                 'product_id' => $product_id,
