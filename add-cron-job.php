@@ -295,7 +295,7 @@ function pti_process_scheduled_emails()
                 "contact"    => ["email" => $email->mailto],
                 "origin"     => "api",
                 "eventName"  => $payload['eventName'],
-                "properties" => $payload['properties'] ?? [],
+                "properties" => (object)($payload['properties'] ?? []),
             ];
 
             $response = wp_remote_post("https://api.omnisend.com/v5/events", [
