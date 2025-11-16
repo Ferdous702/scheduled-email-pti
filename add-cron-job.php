@@ -10,7 +10,10 @@ if (!defined('ABSPATH')) exit;
 
 // ✅ Configure
 // Define your face-to-face product IDs here
-define('FACE_2_FACE_PRODUCT_CODES', array(107,97,89,73,1748,403,736,743,747,2300,2809,2190,544,545,543));
+define('FACE_2_FACE_PRODUCT_CODES', array(107,97,89,73,1748,5640,403,736,743,747,2300,2809,2190,544,545,543));
+
+define('PHLEBOTOMY_TRAINING_OMNISEND', [107,97,89,73,1748,5640]);
+
 
 // Send all emails to a test address (debug mode)
 $debug_moode_emails = false;
@@ -85,7 +88,7 @@ function schedule_events_on_purchase($order_id, $return = false)
     }
 
     $table_name = $wpdb->prefix . 'scheduled_emails';
-    $customer_email = $debug_moode_emails ? "your_test_email@example.com" : $order->get_billing_email();
+    $customer_email = $debug_moode_emails ? "ferdous935174@gmail.com" : $order->get_billing_email();
 
     $three_days_ids = [2809, 2190, 544, 545, 543];
 
@@ -184,6 +187,67 @@ function schedule_events_on_purchase($order_id, $return = false)
         } else {
             error_log("PTI Scheduled Email: FAILED to insert reminder event for Order ID $order_id, Product ID $product_id: " . $wpdb->last_error);
         }
+
+        // Schedule Feedback Form Event
+        $feedback_date = $last_date ?: $first_date;
+        $feedback_time = date('Y-m-d H:i:s', strtotime("$feedback_date 4:45 PM"));
+        $insert_result = $wpdb->insert($table_name, [
+            'mailto'         => $customer_email,
+            'subject' => 'Your thoughts matter! Share your feedback now',
+            'content'        => json_encode(['eventName' => 'classroom_training']),
+            'scheduled_time' => $feedback_time,
+            'order_id'       => $order_id,
+            'product_id' => $product_id,
+            'variation_id' => $variation_id,
+        ]);
+        if ($insert_result) {
+            error_log("Scheduled Email Plugin: Feedback Email Inserted feedback event for Order ID $order_id, Product ID $product_id");
+        } else {
+            error_log("Scheduled Email Plugin: Feedback Email Failed to insert feedback event for Order ID $order_id, Product ID $product_id: " . $wpdb->last_error);
+        }
+
+        // Location based review email
+        $review_properties = ["location" => $location];
+        $review_subject = "Get a £10 Gift Card by Writing a Review";
+        $review_time = date('Y-m-d H:i:s', strtotime("{$last_date} 5:00pm"));
+
+        $insert_result = $wpdb->insert($table_name, [
+            'mailto'         => $customer_email,
+            'subject' => $review_subject,
+            'content'        => json_encode(['eventName' =>  'google_map_review', 'properties' => $review_properties]),
+            'scheduled_time' => $review_time,
+            'order_id'       => $order_id,
+            'product_id' => $product_id,
+            'variation_id' => $variation_id,
+        ]);
+        if ($insert_result) {
+            error_log("Scheduled Email Plugin: Location based review email Inserted review event for Order ID $order_id, Product ID $product_id");
+        } else {
+            error_log("Scheduled Email Plugin: Location based review email Failed to insert review event for Order ID $order_id, Product ID $product_id: " . $wpdb->last_error);
+        }
+
+
+
+        // Phlebotomy Training for theory part
+        if (in_array($product_id, PHLEBOTOMY_TRAINING_OMNISEND) && !empty($first_date)) {
+            $phle_time = date('Y-m-d H:i:s', strtotime("$first_date 4:45 PM -72 hours"));
+            $insert_result = $wpdb->insert($table_name, [
+                'mailto'         => $customer_email,
+                'subject' => 'Phlebotomy Reminder Email for completing theory Part',
+                'content'        => json_encode(['eventName' => 'phle_reminder_mail']),
+                'scheduled_time' => $phle_time,
+                'order_id'       => $order_id,
+                'product_id' => $product_id,
+                'variation_id' => $variation_id,
+            ]);
+            if ($insert_result) {
+                error_log("Scheduled Email Plugin: Phlebotomy Training for Theory Inserted feedback event for Order ID $order_id, Product ID $product_id");
+            } else {
+                error_log("Scheduled Email Plugin: Phlebotomy Training for Theory Failed to insert feedback event for Order ID $order_id, Product ID $product_id: " . $wpdb->last_error);
+            }
+        }
+
+
     }
 
     if ($return) {
